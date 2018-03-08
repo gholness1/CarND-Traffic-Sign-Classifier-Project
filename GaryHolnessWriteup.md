@@ -56,8 +56,6 @@ the distribution.  With a smaller number of examples, such as with the validatio
 have as true a representation of the distribution.  After all we have 43 classes and need a sufficiently
 large number of samples (examples) to get a good representation of the distribution over 43 class labels.
 
-![alt text][image1]
-
 ### Design and Test a Model Architecture
 
 #### 1. Describe how you preprocessed the image data. What techniques were chosen and why did you choose these techniques? Consider including images showing the output of each preprocessing technique. Pre-processing refers to techniques such as converting to grayscale, normalization, etc. (OPTIONAL: As described in the "Stand Out Suggestions" part of the rubric, if you generated additional data for training, describe why you decided to generate additional data, how you generated the data, and provide example images of the additional data. Then describe the characteristics of the augmented training set like number of images in the set, number of images for each class, etc.)
@@ -135,8 +133,8 @@ training set strikes a good balance between estimating generalization error whil
 
 My final model results were:
 * training set accuracy of 100%
-* validation set accuracy of 74.2%
-* test set accuracy of 100%
+* validation set accuracy of 67.70%
+* test set accuracy of 96.68%
 
 If an iterative approach was chosen:
 * What was the first architecture that was tried and why was it chosen?
@@ -183,9 +181,29 @@ this tells you that with more examples, generalization is improving.
 
 #### 1. Choose five German traffic signs found on the web and provide them in the report. For each image, discuss what quality or qualities might be difficult to classify.
 
-I randomly selected 43 road sign images from the test set. One example
+I started out by randomly selecting 43 road sign images from the test set. One example
 from each of the 43 classes was randomly selected to form what I call
-the exemplars.  This is a harder problem than what was asked.
+the exemplars. This was not the correct approach.  I am curious though, had I set asside
+43 road sign images from the test set, how would it have performed. Perhaps fairly well.
+
+Nonetheless, I went back and found 5 images of German road signs using Google image search.
+These images were of varying resolutions, so usinging the Preview application on MacOS,
+I changed each image to 32 x 32 pixel color images.  In many cases, this required changing
+the original aspect ratio. The effect of this was that the scaled down images were warped
+from their original version.  Moreover, The road sign images have varying backgrounds including
+fields, roadways, and buildings.  Features associated with varying background also impacted
+the content of the web images.   These proved to be very difficult to classify.  The reason
+for this stems from the general content of the training set.  The road sign images are, for
+the most part, croppped so that the road sign occupies most of the image.  This is certainly
+not the case with the road sign images I obtained from the web.  A good additional processing
+step would be to segment the foreground (i.e. road signs) from the background, and artificially
+rotate and scale the road sign in the foreground so that it appears centered and occupies
+most of the 32 x 32 pixel image.  Additionally, while 32 x 32 pixel makes the problem easier
+from a network architecture perspective, that is not much information when converted to grayscale.
+More information would be provided if full color were employed versus using normalized
+grayscale.  In addition having bigger images, say 620 x 480 would perhaps give the network
+opportunity to describe features discriminating background from foreground, essentially
+picking out the road side features "in context."
 
 #### 2. Discuss the model's predictions on these new traffic signs and compare the results to predicting on the test set. At a minimum, discuss what the predictions were, the accuracy on these new predictions, and compare the accuracy to the accuracy on the test set (OPTIONAL: Discuss the results in more detail as described in the "Stand Out Suggestions" part of the rubric).
 
@@ -194,13 +212,36 @@ This was worse than the performance on the test set.  The reason for this, I spe
 with only a single example from each of the 43 classes, it is entirely possible that randomization
 picked a "difficult" isntance.
 
+The accuracy on the web-obtained roadsign images was an abismal 0%.
+The reason for this is due
+to the drastic difference between the web versions and the training set versions.  The web
+versions were actual road sign images as one would see them in context.  That is there was
+alot of background including grass, buildings, etc.   Moreover, relatively few of the image
+pixels consisted of road sign whereas for the training set, the most of the image pixels
+consisted of road sign.
+
+When predicting the web-obtained road sign images, the predictions were as follows
+
+image 1:   Speed Limit 70 km/hr (label 4)   top 5 predicted labels: [35 34 12 10 29]
+image 2:   Speed Limit 100 km/hr (label 7)  top 5 predicted labels: [17 13 26 12 14]
+image 3:   Children crossing (label 28)     top 5 predicted labels: [ 0  1 37 29 18]
+image 4:   Speed Limit 30 km/hr (label 1)   top 5 predicted labels: [ 2  4  1 37 39]
+image 5:   Stop (label 14)                  top 5 predicted labels: [40 12 14 33  2]
+
 #### 3. Describe how certain the model is when predicting on each of the five new images by looking at the softmax probabilities for each prediction. Provide the top 5 softmax probabilities for each image along with the sign type of each probability. (OPTIONAL: as described in the "Stand Out Suggestions" part of the rubric, visualizations can also be provided such as bar charts)
 
-From examination of the softmax probabilities, I noticed that values are generally very small.  For example
-for the 1st exemplar the exponent is e-08, e-09, etc.  For such small values, the difference between the
-selection and the second best is very very tight.  For this reason, I would say there is not overwhelming
-winner and therefore confidence is not very hight.  That is, the winning prediction does not "stand out"
-much from the next highest predictions.
+From observation, when I selected images from test set, I noticed for many cases the softmax probabilities that
+the "winning" class label has a probability whose exponent was e-01 where the next highest probability had a
+far smaller exponent like e-05.  This means the model is very certain about the predicted label because the
+2nd, 3rd, etc. choice have softmax probabilities that are multiple orders of magnitude smaller.
+
+Contrast this with the web-obtained roadway images.  The model is less certain.  I observed that the 
+softmax probabilities are only a single order of magnitude off from one another.  The top label has
+a softmax probability whose exponent is e-01, the 2nd label has softmax probability with exponent e-02,
+followed by 3rd with e-03 etc.  In one case the softmax probabilities had exponents
+[e-01  e-01 e-02 e-03 e-03].  The fact that the top choice and 2nd choice were very close (same exponent e-01)
+means that the model was less certain.  A more certain model would have a far larger probability assigned
+to the top label (predicted label).
 
 ### (Optional) Visualizing the Neural Network (See Step 4 of the Ipython notebook for more details)
 #### 1. Discuss the visual output of your trained network's feature maps. What characteristics did the neural network use to make classifications?
